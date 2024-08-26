@@ -40,6 +40,10 @@ public final class StartupOptions implements Serializable {
         return new StartupOptions(StartupMode.INITIAL, null);
     }
 
+    public static StartupOptions history() {
+        return new StartupOptions(StartupMode.HISTORY, null);
+    }
+
     /**
      * Never to perform snapshot on the monitored database tables upon first startup, just read from
      * the beginning of the binlog. This should be used with care, as it is only valid when the
@@ -92,7 +96,7 @@ public final class StartupOptions implements Serializable {
     private StartupOptions(StartupMode startupMode, BinlogOffset binlogOffset) {
         this.startupMode = startupMode;
         this.binlogOffset = binlogOffset;
-        if (startupMode != StartupMode.INITIAL) {
+        if (startupMode != StartupMode.INITIAL && startupMode != StartupMode.HISTORY) {
             checkNotNull(
                     binlogOffset, "Binlog offset is required if startup mode is %s", startupMode);
         }
