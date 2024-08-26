@@ -36,6 +36,7 @@ import com.ververica.cdc.connectors.mysql.MySqlValidator;
 import com.ververica.cdc.connectors.mysql.debezium.DebeziumUtils;
 import com.ververica.cdc.connectors.mysql.source.assigners.MySqlBinlogSplitAssigner;
 import com.ververica.cdc.connectors.mysql.source.assigners.MySqlHybridSplitAssigner;
+import com.ververica.cdc.connectors.mysql.source.assigners.MySqlSnapshotSplitAssigner;
 import com.ververica.cdc.connectors.mysql.source.assigners.MySqlSplitAssigner;
 import com.ververica.cdc.connectors.mysql.source.assigners.state.BinlogPendingSplitsState;
 import com.ververica.cdc.connectors.mysql.source.assigners.state.HybridPendingSplitsState;
@@ -177,6 +178,19 @@ public class MySqlSource<T>
                 boolean isTableIdCaseSensitive = DebeziumUtils.isTableIdCaseSensitive(jdbc);
                 splitAssigner =
                         new MySqlHybridSplitAssigner(
+                                sourceConfig,
+                                enumContext.currentParallelism(),
+                                new ArrayList<>(),
+                                isTableIdCaseSensitive);
+            } catch (Exception e) {
+                throw new FlinkRuntimeException(
+                        "Failed to discover captured tables for enumerator", e);
+            }
+        } else if (sourceConfig.getStartupOptions().startupMode == StartupMode.HISTORY) {
+            try (JdbcConnection jdbc = openJdbcConnection(sourceConfig)) {
+                boolean isTableIdCaseSensitive = DebeziumUtils.isTableIdCaseSensitive(jdbc);
+                splitAssigner =
+                        new MySqlSnapshotSplitAssigner(
                                 sourceConfig,
                                 enumContext.currentParallelism(),
                                 new ArrayList<>(),

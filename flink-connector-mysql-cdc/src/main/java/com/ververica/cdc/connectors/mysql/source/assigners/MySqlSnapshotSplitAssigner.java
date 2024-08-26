@@ -177,6 +177,11 @@ public class MySqlSnapshotSplitAssigner implements MySqlSplitAssigner {
     }
 
     @Override
+    public boolean isStreamSplitAssigned() {
+        return false;
+    }
+
+    @Override
     public void open() {
         chunkSplitter.open();
         discoveryCaptureTables();
@@ -339,6 +344,7 @@ public class MySqlSnapshotSplitAssigner implements MySqlSplitAssigner {
         waitTableDiscoveryReady();
         synchronized (lock) {
             checkSplitterErrors();
+
             if (!remainingSplits.isEmpty()) {
                 // return remaining splits firstly
                 Iterator<MySqlSchemalessSnapshotSplit> iterator = remainingSplits.iterator();
