@@ -20,7 +20,6 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestOptions;
-import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -84,11 +83,11 @@ public class MySqlSourceExampleTest2 {
         DataStream<String> union = mySqlParallelSource1.union(mySqlParallelSource2);
         union.print().setParallelism(1);
         // set the source parallelism to 4
-
-        JobClient jobClient = env.executeAsync("Print MySQL Snapshot + Binlog");
-        Thread.sleep(30000);
+        env.execute("Print MySQL Snapshot + Binlog");
+        //        JobClient jobClient = env.executeAsync("Print MySQL Snapshot + Binlog");
+        //        Thread.sleep(30000);
         // 判断是否同步完，关闭任务
 
-        jobClient.cancel();
+        //        jobClient.cancel();
     }
 }

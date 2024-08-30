@@ -26,6 +26,7 @@ import org.apache.flink.shaded.guava30.com.google.common.collect.Lists;
 
 import com.ververica.cdc.connectors.mysql.source.assigners.MySqlBinlogSplitAssigner;
 import com.ververica.cdc.connectors.mysql.source.assigners.MySqlHybridSplitAssigner;
+import com.ververica.cdc.connectors.mysql.source.assigners.MySqlSnapshotSplitAssigner;
 import com.ververica.cdc.connectors.mysql.source.assigners.MySqlSplitAssigner;
 import com.ververica.cdc.connectors.mysql.source.assigners.state.PendingSplitsState;
 import com.ververica.cdc.connectors.mysql.source.config.MySqlSourceConfig;
@@ -204,10 +205,12 @@ public class MySqlSourceEnumerator implements SplitEnumerator<MySqlSplit, Pendin
                 continue;
             }
 
-            if (splitAssigner.isStreamSplitAssigned()
-                    && sourceConfig.isCloseIdleReaders()
-                    && noMoreSnapshotSplits()
-                    && (binlogSplitTaskId != null && !binlogSplitTaskId.equals(nextAwaiting))) {
+            //            splitAssigner.isStreamSplitAssigned()
+            //                    && sourceConfig.isCloseIdleReaders()
+            //                    && noMoreSnapshotSplits()
+            //                    && (binlogSplitTaskId != null &&
+            // !binlogSplitTaskId.equals(nextAwaiting))
+            if (noMoreSnapshotSplits()) {
                 // close idle readers when snapshot phase finished.
                 context.signalNoMoreSplits(nextAwaiting);
                 awaitingReader.remove();
@@ -235,6 +238,8 @@ public class MySqlSourceEnumerator implements SplitEnumerator<MySqlSplit, Pendin
     private boolean noMoreSnapshotSplits() {
         if (splitAssigner instanceof MySqlHybridSplitAssigner) {
             return ((MySqlHybridSplitAssigner) splitAssigner).noMoreSnapshotSplits();
+        } else if (splitAssigner instanceof MySqlSnapshotSplitAssigner) {
+            return ((MySqlSnapshotSplitAssigner) splitAssigner).noMoreSnapshotSplits();
         } else if (splitAssigner instanceof MySqlBinlogSplitAssigner) {
             return true;
         }
